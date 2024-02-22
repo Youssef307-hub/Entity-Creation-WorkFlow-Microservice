@@ -1,0 +1,47 @@
+spring:
+  profiles:
+    active: dev
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: Entity-Creation-Microservice
+            client-secret: VS9aEyFiSbBe04e8V0JompQVDn4zp5sj
+            authorization-grant-type: authorization_code
+            scope:
+              - openid
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8090/realms/Entity-Creation-Work-Flow
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8090/realms/Entity-Creation-Work-Flow
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/entity_creation_workflow
+    username: postgres
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect:
+          org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    mongodb:
+     uri: mongodb://localhost:27017/wfloghistory
+    redis:
+      host: host.docker.internal
+      port: 6379
+
+  cache:
+    redis:
+      time-to-live: 600000
+springdoc:
+  swagger-ui:
+    oauth:
+      client-id: Entity-Creation-Microservice
+      client-secret: VS9aEyFiSbBe04e8V0JompQVDn4zp5sj
