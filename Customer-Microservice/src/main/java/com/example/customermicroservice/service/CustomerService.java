@@ -6,7 +6,6 @@ import com.example.customermicroservice.exceptionhandling.*;
 import com.example.customermicroservice.model.Customer;
 import com.example.customermicroservice.repository.CustomerRepository;
 import com.example.customermicroservice.utility.CustomerMapper;
-import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import static com.example.customermicroservice.exceptionhandling.ErrorsEnum.*;
 
 @Service
 public class CustomerService {
@@ -41,8 +41,13 @@ public class CustomerService {
     @Transactional
     public ResponseEntity<CustomerResponseDTO> createCustomer(CustomerRequestDTO customerRequestDTO){
         // Map the incoming DTO to customer
-        Customer customer = customerMapper.mapToEntity(customerRequestDTO);
-        LOGGER.info("The Customer in creation step is {} ", customer);
+        Customer customer = null;
+        try {
+            customer = customerMapper.mapToEntity(customerRequestDTO);
+            LOGGER.info("The Customer in creation step is {} ", customer);
+        } catch (NullPointerException e) {
+            throw new NullPointerException(NULL_POINTER.message);
+        }
         // Set the initial data for every customer
         customer.setCreatedBy(extractUserName());
         customer.setCreationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
@@ -72,7 +77,7 @@ public class CustomerService {
         // If Status returned with null value delete the initial data created for the customer
         if (status == null){
             customerRepository.deleteById(customer.getId());
-            throw new StatusIsNullException();
+            throw new NullPointerException(STATUS_IS_NULL.message);
         }
 
         // Change the initial status then save the updated customer
@@ -107,7 +112,7 @@ public class CustomerService {
 
         // If there is no ids returned then throw exception
         if(entityIds == null || entityIds.isEmpty()){
-            throw new CustomersNotFoundException();
+            throw new CustomerNotFoundException(CUSTOMERS_NOT_FOUND.message);
         }
 
         // Getting the customers with the returned ids
@@ -141,7 +146,7 @@ public class CustomerService {
 
         // If there is no ids returned then throw exception
         if(entityIds == null || entityIds.isEmpty()){
-            throw new CustomersNotFoundException();
+            throw new CustomerNotFoundException(CUSTOMERS_NOT_FOUND.message);
         }
 
         // Getting the customers with the returned ids
@@ -152,7 +157,8 @@ public class CustomerService {
 
     @Transactional
     public ResponseEntity<CustomerResponseDTO> updateCustomerStatus(Long entityId){
-        Customer customer = customerRepository.findById(entityId).orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerRepository.findById(entityId)
+                .orElseThrow(()-> new CustomerNotFoundException(CUSTOMER_NOT_FOUND.message));
         LOGGER.info("The Customer is {} ", customer);
 
         // Url to hit in the WorkFlow Microservice
@@ -172,7 +178,7 @@ public class CustomerService {
 
         // If Status returned with null value Customer Will Not Be Updated
         if (status == null){
-            throw new CustomerNotUpdatedException();
+            throw new NullPointerException(CUSTOMER_NOT_UPDATED.message);
         }
 
         // Setting the new status and the modification date coming from the WF Microservice
@@ -192,7 +198,7 @@ public class CustomerService {
         String token = "Bearer " + jwt.getTokenValue();
 
         if(jwt.getTokenValue() == null){
-            throw new TokenIsNullException();
+            throw new NullPointerException(ErrorsEnum.TOKEN_IS_NULL.message);
         }
 
         // Create headers and set the JWT token

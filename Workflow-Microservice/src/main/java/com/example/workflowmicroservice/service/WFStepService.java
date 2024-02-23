@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,7 @@ public class WFStepService {
     public ResponseEntity<WFStepDTO> createWorkFlowStep(WFStepDTO WFStepDTO){
 
         WorkFlow workFlow = WFRepository.findById(WFStepDTO.getWorkFlowId())
-                .orElseThrow(()-> new ObjectNotFoundException("Work Flow"));
+                .orElseThrow(()-> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
         WFStep step = mapper.mapToEntity(WFStepDTO);
         step.setWorkFlow(workFlow);
 
@@ -42,11 +43,11 @@ public class WFStepService {
     }
 
     public ResponseEntity<List<WFStepDTO>> getAllWorkFlowStepsByWorkFlowId(Long id){
-        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException("Work Flow"));
+        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
         List<WFStep> wfSteps = stepRepository.findWorkFlowStepsByWorkFlow(workFlow);
 
         if(wfSteps.isEmpty()){
-            throw new ObjectNotFoundException("Work Flow Steps");
+            throw new ObjectNotFoundException(STEP_NOT_FOUND.message);
         }
 
         List<WFStepDTO> WFStepDTOS = wfSteps.stream().map(mapper::mapToDTO).toList();

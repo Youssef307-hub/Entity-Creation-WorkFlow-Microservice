@@ -26,6 +26,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ErrorObject> handleNullPointerException(NullPointerException exception) {
+        ErrorObject errorResponse = ErrorObject.builder()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message(exception.getLocalizedMessage())
+                .TimeStamp(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<ErrorObject> handleDataBaseException(DataAccessException exception) {
 
@@ -64,7 +75,7 @@ public class GlobalExceptionHandler {
         ErrorObject errorObject = ErrorObject.builder()
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .TimeStamp(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-                .message(exception.getMessage() + " Not Found!")
+                .message(exception.getMessage())
                 .build();
 
         return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);

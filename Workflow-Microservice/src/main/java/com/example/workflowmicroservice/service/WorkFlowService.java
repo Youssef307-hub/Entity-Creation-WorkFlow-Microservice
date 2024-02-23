@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class WorkFlowService {
     @Transactional
     public ResponseEntity<WorkFlowDTO> createWorkFlow(WorkFlowDTO workFlowDTO) {
         EntityType entityType = entityTypeRepository.findById(workFlowDTO.getEntityTypeId())
-                .orElseThrow(()-> new ObjectNotFoundException("Entity Type"));
+                .orElseThrow(()-> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
 
         WorkFlow workFlow = mapper.mapToEntity(workFlowDTO);
         workFlow.setEntityType(entityType);
@@ -45,7 +46,7 @@ public class WorkFlowService {
         List<WorkFlow> workFlows = WFRepository.findAll();
 
         if (workFlows.isEmpty()){
-            throw new ObjectNotFoundException("Work Flows");
+            throw new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message);
         }
 
         List<WorkFlowDTO> workFlowDTOS = workFlows.stream().map(mapper::mapToDTO).toList();
@@ -58,7 +59,7 @@ public class WorkFlowService {
     }
 
     public ResponseEntity<WorkFlowDTO> getWorkFlowById(Long id) {
-        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException("Work FLow"));
+        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
         WorkFlowDTO workFlowDTO = mapper.mapToDTO(workFlow);
         workFlowDTO.setEntityTypeId(workFlow.getEntityType().getId());
 
@@ -68,8 +69,8 @@ public class WorkFlowService {
     @Transactional
     public ResponseEntity<WorkFlowDTO> updateWorkFlowEntityTypeById(Long id, Long entityTypeId) {
 
-        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException("Work FLow"));
-        EntityType entityType = entityTypeRepository.findById(entityTypeId).orElseThrow(()-> new ObjectNotFoundException("Entity Type"));
+        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
+        EntityType entityType = entityTypeRepository.findById(entityTypeId).orElseThrow(()-> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
 
         workFlow.setEntityType(entityType);
 
@@ -85,7 +86,7 @@ public class WorkFlowService {
     @Transactional
     public ResponseEntity<WorkFlowDTO> updateWorkFlowVersionById(Long id, String version) {
 
-        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException("Work FLow"));
+        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
 
         workFlow.setVersion(version);
 
@@ -100,7 +101,7 @@ public class WorkFlowService {
 
     @Transactional
     public ResponseEntity<String> deleteWorkFlowById(Long id) {
-        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException("Work FLow"));
+        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
         WFRepository.delete(workFlow);
 
         return new ResponseEntity<>(
