@@ -5,6 +5,7 @@ import com.example.workflowmicroservice.service.EntityTypeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,7 +29,7 @@ public class EntityTypeController {
             tags = "POST")
     @PostMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EntityTypeDTO> createEntityType(@RequestBody EntityTypeDTO entityTypeDTO){
+    public ResponseEntity<EntityTypeDTO> createEntityType(@Valid @RequestBody EntityTypeDTO entityTypeDTO){
       return typeService.createEntityType(entityTypeDTO);
     };
 

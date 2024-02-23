@@ -2,9 +2,12 @@ package com.example.customermicroservice.service;
 
 import com.example.customermicroservice.dto.CustomerRequestDTO;
 import com.example.customermicroservice.dto.CustomerResponseDTO;
+import com.example.customermicroservice.exceptionhandling.*;
 import com.example.customermicroservice.model.Customer;
 import com.example.customermicroservice.repository.CustomerRepository;
 import com.example.customermicroservice.utility.CustomerMapper;
+import org.springframework.dao.DataAccessException;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -15,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -34,19 +38,20 @@ public class CustomerService {
         this.restTemplate = restTemplateBuilder.build();
     }
 
+    @Transactional
     public ResponseEntity<CustomerResponseDTO> createCustomer(CustomerRequestDTO customerRequestDTO){
         // Map the incoming DTO to customer
         Customer customer = customerMapper.mapToEntity(customerRequestDTO);
-        LOGGER.info("The Customer is {} ", customer);
+        LOGGER.info("The Customer in creation step is {} ", customer);
         // Set the initial data for every customer
         customer.setCreatedBy(extractUserName());
         customer.setCreationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         customer.setStatus("Draft");
-        LOGGER.info("The Customer after setting is {} ", customer);
+        LOGGER.info("The Customer in creation step after setting initial data is {} ", customer);
 
         // Save the Customer with the initial data to generate id
         customerRepository.save(customer);
-        LOGGER.info("The Customer is {} ", customer);
+        LOGGER.info("The Customer in creation step after being saved is {} ", customer);
 
         // Url to hit in the WorkFlow Microservice
         String url = "http://localhost:8080/work-flow/initiate/Customer/" + customer.getId();
@@ -55,8 +60,20 @@ public class CustomerService {
         HttpEntity<String> requestEntity = createRequestEntityWithHeaders();
 
         // The response entity body will contain the status based on the logged-in user
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-        String status = response.getBody();
+        String status = null;
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+            status = response.getBody();
+        } catch (RestClientException e) {
+            customerRepository.deleteById(customer.getId());
+            throw new RuntimeException(e);
+        }
+
+        // If Status returned with null value delete the initial data created for the customer
+        if (status == null){
+            customerRepository.deleteById(customer.getId());
+            throw new StatusIsNullException();
+        }
 
         // Change the initial status then save the updated customer
         customer.setStatus(status);
@@ -65,7 +82,9 @@ public class CustomerService {
          return new ResponseEntity<>(customerMapper.mapToResponseDTO(customer), HttpStatus.CREATED);
     }
 
+
     public ResponseEntity<List<CustomerResponseDTO>> getPendingCustomers(){
+
         // Url to hit in the WorkFlow Microservice
         String url = "http://localhost:8080/work-flow/pending/Customer";
 
@@ -74,12 +93,22 @@ public class CustomerService {
 
         // The response entity body will contain the list of ids of the customers in any step that's
         // not the last step of creation
-        ResponseEntity<List<Long>> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                requestEntity,
-                new ParameterizedTypeReference<>(){});
-        List<Long> entityIds = response.getBody();
+        List<Long> entityIds = null;
+        try {
+            ResponseEntity<List<Long>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    requestEntity,
+                    new ParameterizedTypeReference<>(){});
+            entityIds = response.getBody();
+        } catch (RestClientException e) {
+            throw new RuntimeException(e);
+        }
+
+        // If there is no ids returned then throw exception
+        if(entityIds == null || entityIds.isEmpty()){
+            throw new CustomersNotFoundException();
+        }
 
         // Getting the customers with the returned ids
         List<Customer> customers = customerRepository.findAllByIdIn(entityIds);
@@ -87,7 +116,9 @@ public class CustomerService {
         return new ResponseEntity<>(customers.stream().map(customerMapper::mapToResponseDTO).toList(), HttpStatus.OK);
     }
 
+
     public ResponseEntity<List<CustomerResponseDTO>> getApprovedCustomers(){
+
         // Url to hit in the WorkFlow Microservice
         String url = "http://localhost:8080/work-flow/approved/Customer";
 
@@ -95,13 +126,23 @@ public class CustomerService {
         HttpEntity<String> requestEntity = createRequestEntityWithHeaders();
 
         // The response entity body will contain the list of ids of the customers in the last step of creation AKA Approved
-        ResponseEntity<List<Long>> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                requestEntity,
-                new ParameterizedTypeReference<>(){});
+        List<Long> entityIds = null;
+        try {
+            ResponseEntity<List<Long>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    requestEntity,
+                    new ParameterizedTypeReference<>(){});
 
-        List<Long> entityIds = response.getBody();
+            entityIds = response.getBody();
+        } catch (RestClientException e) {
+            throw new RuntimeException(e);
+        }
+
+        // If there is no ids returned then throw exception
+        if(entityIds == null || entityIds.isEmpty()){
+            throw new CustomersNotFoundException();
+        }
 
         // Getting the customers with the returned ids
         List<Customer> customers = customerRepository.findAllByIdIn(entityIds);
@@ -109,8 +150,9 @@ public class CustomerService {
         return new ResponseEntity<>(customers.stream().map(customerMapper::mapToResponseDTO).toList(), HttpStatus.OK);
     }
 
+    @Transactional
     public ResponseEntity<CustomerResponseDTO> updateCustomerStatus(Long entityId){
-        Customer customer = customerRepository.findById(entityId).get();
+        Customer customer = customerRepository.findById(entityId).orElseThrow(CustomerNotFoundException::new);
         LOGGER.info("The Customer is {} ", customer);
 
         // Url to hit in the WorkFlow Microservice
@@ -120,8 +162,18 @@ public class CustomerService {
         HttpEntity<String> requestEntity = createRequestEntityWithHeaders();
 
         // The response entity body will contain the new status after updating the customer
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
-        String status = response.getBody();
+        String status = null;
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
+            status = response.getBody();
+        } catch (RestClientException e) {
+            throw new RuntimeException(e);
+        }
+
+        // If Status returned with null value Customer Will Not Be Updated
+        if (status == null){
+            throw new CustomerNotUpdatedException();
+        }
 
         // Setting the new status and the modification date coming from the WF Microservice
         customer.setStatus(status);
@@ -138,6 +190,10 @@ public class CustomerService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
         String token = "Bearer " + jwt.getTokenValue();
+
+        if(jwt.getTokenValue() == null){
+            throw new TokenIsNullException();
+        }
 
         // Create headers and set the JWT token
         HttpHeaders headers = new HttpHeaders();

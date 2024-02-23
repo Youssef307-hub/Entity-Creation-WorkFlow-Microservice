@@ -18,10 +18,12 @@ public class FirstOrLastNameNotNullValidator implements ConstraintValidator<Firs
 
     @Override
     public boolean isValid(Object obj, ConstraintValidatorContext constraintValidatorContext) {
-        Object firstNameValue = new BeanWrapperImpl(obj).getPropertyValue(firstName);
-        Object lastNameValue = new BeanWrapperImpl(obj).getPropertyValue(lastName);
+        BeanWrapperImpl beanWrapper = new BeanWrapperImpl(obj);
+        Object firstNameValue = beanWrapper.getPropertyValue(firstName);
+        Object lastNameValue = beanWrapper.getPropertyValue(lastName);
 
-        return (String.valueOf(firstNameValue) != null || String.valueOf(lastNameValue) != null);
+        return ((firstNameValue != null && !String.valueOf(firstNameValue).trim().isEmpty()) ||
+                (lastNameValue != null && !String.valueOf(lastNameValue).trim().isEmpty()));
     }
 
 }

@@ -5,6 +5,7 @@ import com.example.workflowmicroservice.service.WorkFlowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,7 +29,7 @@ public class WFController {
             tags = "POST")
     @PostMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WorkFlowDTO> createWorkflow(@RequestBody WorkFlowDTO workFlowDTO){
+    public ResponseEntity<WorkFlowDTO> createWorkflow(@Valid @RequestBody WorkFlowDTO workFlowDTO){
         return workFlowService.createWorkFlow(workFlowDTO);
     };
 

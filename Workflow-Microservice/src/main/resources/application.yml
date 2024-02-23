@@ -33,13 +33,6 @@ spring:
   data:
     mongodb:
      uri: mongodb://localhost:27017/wfloghistory
-    redis:
-      host: host.docker.internal
-      port: 6379
-
-  cache:
-    redis:
-      time-to-live: 600000
 springdoc:
   swagger-ui:
     oauth:

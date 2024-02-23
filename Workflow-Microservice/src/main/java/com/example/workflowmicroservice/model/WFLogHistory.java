@@ -22,7 +22,7 @@ public class WFLogHistory {
 
     private LocalDateTime creationDate;
 
-    private Long stepId;
+    private Long stepNumber;
 
     private Long entityTypeId;
 

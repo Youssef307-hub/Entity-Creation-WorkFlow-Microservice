@@ -3,13 +3,15 @@ package com.example.customermicroservice.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.cache.annotation.EnableCaching;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CustomerResponseDTO {
+public class CustomerResponseDTO{
 
     private Long id;
 

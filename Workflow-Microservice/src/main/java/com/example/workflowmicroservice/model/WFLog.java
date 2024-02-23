@@ -48,16 +48,13 @@ public class WFLog {
     )
     private LocalDateTime creationDate;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "step_id",
+
+    @Column(
+            name = "step_number",
             nullable = false,
-            referencedColumnName = "id",
-            foreignKey = @ForeignKey(
-                    name = "step_id_fk"
-            )
+            columnDefinition = "INT"
     )
-    private WFStep step;
+    private int stepNumer;
 
     @Column(
             name = "entity_type_id",

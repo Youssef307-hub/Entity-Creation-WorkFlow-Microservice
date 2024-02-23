@@ -1,15 +1,19 @@
 package com.example.workflowmicroservice.service;
 
+import com.example.workflowmicroservice.exceptionhandling.ObjectNotFoundException;
 import com.example.workflowmicroservice.model.*;
 import com.example.workflowmicroservice.repository.*;
 import com.example.workflowmicroservice.utility.WorkFlowMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -25,14 +29,18 @@ public class WFLogicService {
     private final LogRepository logRepository;
     private final LogHistoryRepository logHistoryRepository;
     private final WorkFlowMapper mapper;
+    private static final Logger LOGGER = LoggerFactory.getLogger(WFLogicService.class);
 
+    @Transactional
     public String initiateWorkFlow(String entityType, Long entity_id){
 
         // Getting the entity type object from the database using the entity type name
-        EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType);
+        EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType)
+                .orElseThrow(()-> new ObjectNotFoundException("Entity Type"));
 
         // Getting work flow associated with the entity type
-        WorkFlow workFlow = WFRepository.findWorkFlowByEntityType(entityTypeFromDB);
+        WorkFlow workFlow = WFRepository.findWorkFlowByEntityType(entityTypeFromDB)
+                .orElseThrow(()-> new ObjectNotFoundException("Work Flow"));
 
         // Getting number of steps from the work flow that belongs to the entity type
         long numberOfSteps = WFStepRepository.countWorkFlowStepsByWorkFlow(workFlow);
@@ -41,7 +49,8 @@ public class WFLogicService {
         String userRole = extractUserRole();
 
         // Getting the step eligible for the logged-in user based on his role
-        WFStep wfStep = WFStepRepository.findWorkFlowStepByRoleName(userRole);
+        WFStep wfStep = WFStepRepository.findWorkFlowStepByRoleName(userRole)
+                .orElseThrow(()-> new ObjectNotFoundException("Work Flow Step"));
 
         // Getting the number of the step that the user is eligible for
         int eligibleStepNumber = wfStep.getStepNumber();
@@ -50,7 +59,7 @@ public class WFLogicService {
         WFLog wfLog = WFLog.builder()
                 .createdBy(extractUserName())
                 .creationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-                .step(wfStep)
+                .stepNumer(wfStep.getStepNumber())
                 .entityTypeId(entityTypeFromDB.getId())
                 .entityId(entity_id)
                 .workFlow(workFlow)
@@ -67,38 +76,55 @@ public class WFLogicService {
     }
 
     public List<Long> getPendingEntitiesIds(String entityType){
-        EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType);
+        EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType)
+                .orElseThrow(()-> new ObjectNotFoundException("Entity Type"));
 
-        long numberOfSteps = getStepNumberOfWF(entityTypeFromDB);
+        // Getting the step eligible for the logged-in user based on his role
+        WFStep wfStep = WFStepRepository.findWorkFlowStepByRoleName(extractUserRole())
+                .orElseThrow(()-> new ObjectNotFoundException("Work Flow Step"));
 
-        return logRepository.findPendingEntitiesIds(numberOfSteps, entityTypeFromDB.getId());
+        // Getting the number of the step that the user is eligible for
+        int eligibleStepNumber = wfStep.getStepNumber();
+
+        return logRepository.findPendingEntitiesIds(eligibleStepNumber, entityTypeFromDB.getId());
     }
 
     public List<Long> getApprovedEntitiesIds(String entityType){
-        EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType);
+        EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType)
+                .orElseThrow(()-> new ObjectNotFoundException("Entity Type"));
 
-        long numberOfSteps = getStepNumberOfWF(entityTypeFromDB);
+        // Getting work flow associated with the entity type
+        WorkFlow workFlow = WFRepository.findWorkFlowByEntityType(entityTypeFromDB)
+                .orElseThrow(()-> new ObjectNotFoundException("Work Flow"));
+
+        long numberOfSteps = WFStepRepository.countWorkFlowStepsByWorkFlow(workFlow);
+
+        LOGGER.info("\nThe Number of steps = {}", numberOfSteps);
 
         return logRepository.findApprovedEntitiesIds(numberOfSteps, entityTypeFromDB.getId());
     }
 
+    @Transactional
     public String updateEntityStatusById(String entityType, Long entity_id){
-        EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType);
+        EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType)
+                .orElseThrow(()-> new ObjectNotFoundException("Entity Type"));
 
         // Getting work flow associated with the entity type
-        WorkFlow workFlow = WFRepository.findWorkFlowByEntityType(entityTypeFromDB);
+        WorkFlow workFlow = WFRepository.findWorkFlowByEntityType(entityTypeFromDB)
+                .orElseThrow(()-> new ObjectNotFoundException("Work Flow"));
 
         // Getting current logged-in user role who created the entity
         String userRole = extractUserRole();
 
         // Getting the step eligible for the logged-in user based on his role
-        WFStep wfStep = WFStepRepository.findWorkFlowStepByRoleName(userRole);
+        WFStep wfStep = WFStepRepository.findWorkFlowStepByRoleName(userRole)
+                .orElseThrow(()-> new ObjectNotFoundException("Work Flow Step"));
 
         // Getting the number of the step that the user is eligible for
         int eligibleStepNumber = wfStep.getStepNumber();
 
         // Getting the current step of the entity using the entity id
-        Long currentStepNumber = logRepository.findStatusByEntityIdAndEntityType(entity_id, entityTypeFromDB.getId());
+        Long currentStepNumber = logRepository.findStepNumberByEntityIdAndEntityType(entity_id, entityTypeFromDB.getId());
 
         // If current step number is less than the eligible step number then
         // drop the log to the log history
@@ -109,7 +135,7 @@ public class WFLogicService {
             WFLog wfLog = WFLog.builder()
                     .createdBy(extractUserName())
                     .creationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-                    .step(wfStep)
+                    .stepNumer(wfStep.getStepNumber())
                     .entityTypeId(entityTypeFromDB.getId())
                     .entityId(entity_id)
                     .workFlow(workFlow)
@@ -124,26 +150,18 @@ public class WFLogicService {
     private void dropLogToLogHistoryDB(Long logId){
 
         // First find the log in the WFLog DB
-        WFLog wfLog = logRepository.findById(logId).get();
+        WFLog wfLog = logRepository.findById(logId)
+                .orElseThrow(()-> new ObjectNotFoundException("Work Flow Log"));
 
         // Convert the log type to log history type, so it can be persisted in mongoDB
         WFLogHistory wfLogHistory = mapper.mapToHistoryFromLog(wfLog);
-        wfLogHistory.setWorkFlowId(wfLog.getWorkFlow().getId());
-        wfLogHistory.setStepId(wfLog.getStep().getId());
+        wfLogHistory.setWorkFlowId(wfLog.getWorkFlow().getId());;
 
         // Saving the log history to the mongoDB
         logHistoryRepository.save(wfLogHistory);
 
         // Deleting the log from WFLog DB
         logRepository.deleteById(logId);
-    }
-
-    private Long getStepNumberOfWF(EntityType entityType){
-        // Getting work flow associated with the entity type
-        WorkFlow workFlow = WFRepository.findWorkFlowByEntityType(entityType);
-
-        // Getting number of steps from the work flow that belongs to the entity type
-        return WFStepRepository.countWorkFlowStepsByWorkFlow(workFlow);
     }
 
     private String extractUserRole(){

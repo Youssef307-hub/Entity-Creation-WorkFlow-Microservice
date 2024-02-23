@@ -5,6 +5,7 @@ import com.example.workflowmicroservice.service.WFStepService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,7 +29,7 @@ public class WFStepController {
             tags = "POST")
     @PostMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WFStepDTO> createWorkflowStep(@RequestBody WFStepDTO WFStepDTO){
+    public ResponseEntity<WFStepDTO> createWorkflowStep(@Valid @RequestBody WFStepDTO WFStepDTO){
         return WFStepService.createWorkFlowStep(WFStepDTO);
     };
 

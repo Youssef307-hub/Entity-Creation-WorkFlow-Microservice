@@ -6,7 +6,10 @@ import com.example.customermicroservice.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,7 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
+
     @Operation(
             summary = "Create New Customer",
             description = "Create new customer object and put the status of that customer based on the logged-in user role," +
@@ -29,7 +33,7 @@ public class CustomerController {
             tags = "POST")
     @PostMapping("")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<CustomerResponseDTO> createCustomer(@RequestBody CustomerRequestDTO customerRequestDTO){
+    public ResponseEntity<CustomerResponseDTO> createCustomer(@Valid @RequestBody CustomerRequestDTO customerRequestDTO){
 
         return customerService.createCustomer(customerRequestDTO);
     }

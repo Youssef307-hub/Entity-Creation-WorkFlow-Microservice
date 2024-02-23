@@ -1,6 +1,7 @@
 package com.example.workflowmicroservice.service;
 
 import com.example.workflowmicroservice.dto.WFStepDTO;
+import com.example.workflowmicroservice.exceptionhandling.ObjectNotFoundException;
 import com.example.workflowmicroservice.model.WorkFlow;
 import com.example.workflowmicroservice.model.WFStep;
 import com.example.workflowmicroservice.repository.WFRepository;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,9 +23,11 @@ public class WFStepService {
     private final WFRepository WFRepository;
     private final WorkFlowMapper mapper;
 
+    @Transactional
     public ResponseEntity<WFStepDTO> createWorkFlowStep(WFStepDTO WFStepDTO){
 
-        WorkFlow workFlow = WFRepository.findById(WFStepDTO.getWorkFlowId()).get();
+        WorkFlow workFlow = WFRepository.findById(WFStepDTO.getWorkFlowId())
+                .orElseThrow(()-> new ObjectNotFoundException("Work Flow"));
         WFStep step = mapper.mapToEntity(WFStepDTO);
         step.setWorkFlow(workFlow);
 
@@ -38,8 +42,12 @@ public class WFStepService {
     }
 
     public ResponseEntity<List<WFStepDTO>> getAllWorkFlowStepsByWorkFlowId(Long id){
-        WorkFlow workFlow = WFRepository.findById(id).get();
+        WorkFlow workFlow = WFRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException("Work Flow"));
         List<WFStep> wfSteps = stepRepository.findWorkFlowStepsByWorkFlow(workFlow);
+
+        if(wfSteps.isEmpty()){
+            throw new ObjectNotFoundException("Work Flow Steps");
+        }
 
         List<WFStepDTO> WFStepDTOS = wfSteps.stream().map(mapper::mapToDTO).toList();
 

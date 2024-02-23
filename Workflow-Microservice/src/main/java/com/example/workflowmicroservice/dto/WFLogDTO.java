@@ -17,7 +17,7 @@ public class WFLogDTO {
 
     private LocalDateTime creationDate;
 
-    private Long stepId;
+    private Long stepNumber;
 
     private Long entityTypeId;
 
