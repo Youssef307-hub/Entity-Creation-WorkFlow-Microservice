@@ -27,7 +27,7 @@ This repository contains a Spring Boot microservice designed to handle the appro
 - User roles and details are stored in the Keycloak server.
 
 ## Exception Handling
-- Robust exception handling mechanisms are in place to capture and manage exceptions.
+- Robust exception-handling mechanisms are in place to capture and manage exceptions.
 
 ## Data Transfer Objects (DTOs)
 - DTOs are utilized to shield users from direct interaction with the database.
@@ -36,7 +36,7 @@ This repository contains a Spring Boot microservice designed to handle the appro
 - ORM is implemented using Spring Data JPA and Hibernate.
 
 ## Getting Started
-1. Clone the repository: `git clone https://github.com/your-username/your-repo.git`
+1. Clone the repository: `git clone https://github.com/Youssef307-hub/Entity-Creation-WorkFlow-Microservice.git`
 2. Configure the application properties, including Keycloak settings and database details.
 3. Build and run the Spring Boot application.
 4. Access the APIs for entity creation workflow management.
