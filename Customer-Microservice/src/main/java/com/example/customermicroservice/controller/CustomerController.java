@@ -25,14 +25,12 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-
     @Operation(
             summary = "Create New Customer",
             description = "Create new customer object and put the status of that customer based on the logged-in user role," +
                     " the Api can be accessed by any user that has role 'user' or above",
             tags = "POST")
     @PostMapping("")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<CustomerResponseDTO> createCustomer(@Valid @RequestBody CustomerRequestDTO customerRequestDTO){
 
         return customerService.createCustomer(customerRequestDTO);
@@ -44,7 +42,7 @@ public class CustomerController {
                     " the Api can be accessed by any user that has role 'manager' or 'admin'",
             tags = "PUT")
     @PutMapping("/update/{entityId}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
     public ResponseEntity<CustomerResponseDTO> updateCustomerStatus(@PathVariable Long entityId){
 
         return customerService.updateCustomerStatus(entityId);
@@ -56,7 +54,7 @@ public class CustomerController {
                     " the Api can be accessed by any user that has role 'manager' or 'admin'",
             tags = "GET")
     @GetMapping("/pending")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
     public ResponseEntity<List<CustomerResponseDTO>> getPendingCustomers(){
 
         return customerService.getPendingCustomers();
@@ -68,7 +66,6 @@ public class CustomerController {
                     " the Api can be accessed by any user that has role 'user' or above",
             tags = "GET")
     @GetMapping("")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<CustomerResponseDTO>> getApprovedCustomers(){
 
         return customerService.getApprovedCustomers();

@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
+
 import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.*;
 
 @Service
@@ -46,12 +48,9 @@ public class WFLogicService {
         // Getting number of steps from the work flow that belongs to the entity type
         long numberOfSteps = WFStepRepository.countWorkFlowStepsByWorkFlow(workFlow);
 
-        // Getting current logged-in user role who created the entity
-        String userRole = extractUserRole();
-
         // Getting the step eligible for the logged-in user based on his role
-        WFStep wfStep = WFStepRepository.findWorkFlowStepByRoleName(userRole)
-                .orElseThrow(()-> new ObjectNotFoundException(STEP_NOT_FOUND.message));
+        WFStep wfStep = findWorkFlowForRole();
+        LOGGER.info("\nThe Work Flow step is: {}",wfStep);
 
         // Getting the number of the step that the user is eligible for
         int eligibleStepNumber = wfStep.getStepNumber();
@@ -81,8 +80,7 @@ public class WFLogicService {
                 .orElseThrow(()-> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
 
         // Getting the step eligible for the logged-in user based on his role
-        WFStep wfStep = WFStepRepository.findWorkFlowStepByRoleName(extractUserRole())
-                .orElseThrow(()-> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
+        WFStep wfStep = findWorkFlowForRole();
 
         // Getting the number of the step that the user is eligible for
         int eligibleStepNumber = wfStep.getStepNumber();
@@ -115,11 +113,7 @@ public class WFLogicService {
                 .orElseThrow(()-> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
 
         // Getting current logged-in user role who created the entity
-        String userRole = extractUserRole();
-
-        // Getting the step eligible for the logged-in user based on his role
-        WFStep wfStep = WFStepRepository.findWorkFlowStepByRoleName(userRole)
-                .orElseThrow(()-> new ObjectNotFoundException(STEP_NOT_FOUND.message));
+        WFStep wfStep = findWorkFlowForRole();
 
         // Getting the number of the step that the user is eligible for
         int eligibleStepNumber = wfStep.getStepNumber();
@@ -165,20 +159,30 @@ public class WFLogicService {
         logRepository.deleteById(logId);
     }
 
-    private String extractUserRole(){
+    private List<String> extractUserRole(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        List<String> authorities = authentication.getAuthorities()
+        return authentication.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
+    }
 
-        if(authorities.contains("ROLE_ADMIN")){
-            return "ROLE_ADMIN";
-        } else if (authorities.contains("ROLE_MANAGER")) {
-            return "ROLE_MANAGER";
-        }else
-            return "ROLE_USER";
+    private WFStep findWorkFlowForRole(){
+        List<String> userRoles = extractUserRole();
+        WFStep result = null;
+
+        for (String userRole : userRoles) {
+            Optional<WFStep> wfStep = WFStepRepository.findWorkFlowStepByRoleName(userRole);
+            if (wfStep.isPresent())
+                result = wfStep.get();
+        }
+
+        if(result == null){
+            throw new ObjectNotFoundException(STEP_NOT_FOUND.message);
+        }
+
+        return result;
     }
 
     private String extractUserName(){
