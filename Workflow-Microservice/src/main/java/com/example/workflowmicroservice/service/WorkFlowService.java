@@ -156,7 +156,7 @@ public class WorkFlowService {
             // Find the Work Flow Steps with ids that's already existing to update its values with new Work Flow Step
             Optional<WFStep> matchingNewWfStep = newWfSteps.stream()
                     .filter(newWfStep -> newWfStep.getId().equals(oldWfStep.getId()))
-                    .findFirst();
+                    .findAny();
 
             // If a matching new Work Flow Step is found, update the old WFStep
             matchingNewWfStep.ifPresent(wfStepRepository::save);
