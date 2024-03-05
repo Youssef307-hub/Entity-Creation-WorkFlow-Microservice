@@ -11,6 +11,8 @@ import com.example.workflowmicroservice.repository.WFRepository;
 import com.example.workflowmicroservice.repository.WFStepRepository;
 import com.example.workflowmicroservice.utility.WorkFlowMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ public class WorkFlowService {
     private final EntityTypeRepository entityTypeRepository;
     private final WorkFlowMapper mapper;
     private final WFStepRepository wfStepRepository;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkFlowService.class);
     @Transactional
     public ResponseEntity<WorkFlowDTO> createWorkFlowWithSteps(WorkFlowDTO workFlowDTO) {
         EntityType entityType = entityTypeRepository.findById(workFlowDTO.getEntityTypeId())
@@ -72,6 +76,7 @@ public class WorkFlowService {
         for (int i = 0; i < workFlowDTOS.size(); i++) {
             workFlowDTOS.get(i).setEntityTypeId(workFlows.get(i).getEntityType().getId());
         }
+        LOGGER.info("The work flows are {}", workFlows);
 
         return new ResponseEntity<>(workFlowDTOS, HttpStatus.OK);
     }

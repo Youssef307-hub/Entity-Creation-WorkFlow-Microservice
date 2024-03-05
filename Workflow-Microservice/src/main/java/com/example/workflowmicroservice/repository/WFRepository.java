@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Repository
-@Transactional
 public interface WFRepository extends JpaRepository<WorkFlow, Long> {
     Optional<WorkFlow> findWorkFlowByEntityType(EntityType entityType);
 }

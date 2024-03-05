@@ -68,4 +68,14 @@ public class WFStep {
             columnDefinition = "VARCHAR(255)"
     )
     private String roleName;
+
+    @Override
+    public String toString() {
+        return "WFStep{" +
+                "id=" + id +
+                ", stepNumber=" + stepNumber +
+                ", stepName='" + stepName + '\'' +
+                ", roleName='" + roleName + '\'' +
+                '}';
+    }
 }

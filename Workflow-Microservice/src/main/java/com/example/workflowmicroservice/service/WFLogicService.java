@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.*;
+import static com.example.workflowmicroservice.model.StatusEnum.*;
 
 @Service
 @RequiredArgsConstructor
@@ -65,11 +66,14 @@ public class WFLogicService {
                 .workFlow(workFlow)
                 .build();
 
-        // if the step number is less than or equal the total number of steps then return the step name
+        // if the step number is less than or equal the total number of steps then return the status
         // and that will be the current step of the user
-        if(eligibleStepNumber <= numberOfSteps){
+        if(eligibleStepNumber < numberOfSteps){
             logRepository.save(wfLog);
-            return wfStep.getStepName();
+            return PENDING.value;
+        } else if (eligibleStepNumber == numberOfSteps) {
+            logRepository.save(wfLog);
+            return Approved.value;
         }
 
         return null;
@@ -88,7 +92,7 @@ public class WFLogicService {
         return logRepository.findPendingEntitiesIds(eligibleStepNumber, entityTypeFromDB.getId());
     }
 
-    public List<Long> getApprovedEntitiesIds(String entityType)     {
+    public List<Long> getApprovedEntitiesIds(String entityType){
         EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType)
                 .orElseThrow(()-> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
 
@@ -121,6 +125,9 @@ public class WFLogicService {
         // Getting the current step of the entity using the entity id
         Long currentStepNumber = logRepository.findStepNumberByEntityIdAndEntityType(entity_id, entityTypeFromDB.getId());
 
+        // Getting number of steps from the work flow that belongs to the entity type
+        long numberOfSteps = WFStepRepository.countWorkFlowStepsByWorkFlow(workFlow);
+
         // If current step number is less than the eligible step number then
         // drop the log to the log history
         // create new log with the new step number
@@ -137,7 +144,12 @@ public class WFLogicService {
                     .build();
 
             logRepository.save(wfLog);
-            return wfStep.getStepName();
+
+            if(eligibleStepNumber < numberOfSteps)
+                return PENDING.value;
+            else if (eligibleStepNumber == numberOfSteps) {
+                return Approved.value;
+            }
         }
         return null;
     }
