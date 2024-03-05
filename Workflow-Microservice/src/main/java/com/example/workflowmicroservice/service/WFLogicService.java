@@ -59,9 +59,9 @@ public class WFLogicService {
 
         // Save in the work flow log that creation transaction
         WFLog wfLog = WFLog.builder()
+                .step(wfStep)
                 .createdBy(extractUserName())
                 .creationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-                .stepNumer(wfStep.getStepNumber())
                 .entityTypeId(entityTypeFromDB.getId())
                 .entityId(entity_id)
                 .workFlow(workFlow)
@@ -137,9 +137,9 @@ public class WFLogicService {
         // Then Overwrite the old log with the new one to work flow log table
         if (currentStepNumber < eligibleStepNumber) {
             WFLog newWFLog = WFLog.builder()
-                    .createdBy(extractUserName())
+                    .step(wfStep)
                     .creationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-                    .stepNumer(wfStep.getStepNumber())
+                    .createdBy(extractUserName())
                     .entityTypeId(entityTypeFromDB.getId())
                     .entityId(entity_id)
                     .workFlow(workFlow)

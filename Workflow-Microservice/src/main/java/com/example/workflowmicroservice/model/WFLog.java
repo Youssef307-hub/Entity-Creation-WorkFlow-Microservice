@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedBy;
 
 import java.time.LocalDateTime;
 
@@ -48,13 +50,16 @@ public class WFLog {
     )
     private LocalDateTime creationDate;
 
-
-    @Column(
-            name = "step_number",
+    @ManyToOne
+    @JoinColumn(
+            name = "step_id",
             nullable = false,
-            columnDefinition = "INT"
+            referencedColumnName = "id",
+            foreignKey = @ForeignKey(
+                    name = "step_id_fk"
+            )
     )
-    private int stepNumer;
+    private WFStep step;
 
     @Column(
             name = "entity_type_id",

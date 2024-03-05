@@ -11,14 +11,14 @@ import java.util.List;
 public interface LogRepository extends JpaRepository<WFLog, Long> {
     @Query("SELECT log.entityId " +
             "FROM WorkFlowLog log " +
-            "WHERE (log.stepNumer < :eligibleStep)" +
+            "WHERE (log.step.stepNumber < :eligibleStep)" +
             "AND log.entityTypeId = :entityTypeId")
     List<Long> findPendingEntitiesIds(int eligibleStep, Long entityTypeId);
 
-    @Query("SELECT log.entityId FROM WorkFlowLog log WHERE log.stepNumer = :numberOfSteps AND log.entityTypeId = :entityTypeId")
+    @Query("SELECT log.entityId FROM WorkFlowLog log WHERE log.step.stepNumber = :numberOfSteps AND log.entityTypeId = :entityTypeId")
     List<Long> findApprovedEntitiesIds(Long numberOfSteps, Long entityTypeId);
 
-    @Query("SELECT log.stepNumer FROM WorkFlowLog log WHERE log.entityId = :entityId AND log.entityTypeId = :entityTypeId")
+    @Query("SELECT log.step.stepNumber FROM WorkFlowLog log WHERE log.entityId = :entityId AND log.entityTypeId = :entityTypeId")
     Long findStepNumberByEntityIdAndEntityType(Long entityId, Long entityTypeId);
 
     WFLog findWFLogByEntityIdAndEntityTypeId(Long entityId, Long entityTypeId);
