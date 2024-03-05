@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "work_flow_step",
         uniqueConstraints = {
-                @UniqueConstraint(name = "step_number_unique", columnNames = "step_number")
+                @UniqueConstraint(name = "step_number_within_workflow_unique", columnNames = {"step_number", "work_flow_id"})
         }
 )
 @Data

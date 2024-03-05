@@ -3,6 +3,8 @@ package com.example.workflowmicroservice.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity(name = "WorkFlow")
 @Table(
         name = "work_flow",
@@ -54,4 +56,12 @@ public class WorkFlow {
             columnDefinition = "VARCHAR(255)"
     )
     private String version;
+
+    @OneToMany(
+            mappedBy = "workFlow",
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<WFStep> wfSteps;
 }

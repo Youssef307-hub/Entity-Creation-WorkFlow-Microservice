@@ -9,7 +9,11 @@ public enum ErrorsEnum {
 
     STEP_NOT_FOUND("Work Flow Step Not Found!"),
 
-    NULL_POINTER("Check Your Input Again!");
+    NULL_POINTER("Check Your Input Again!"),
+
+    BAD_REQUEST("The Request Body Is Not Matching With The Attribute!"),
+
+    NO_SUCH_ATTRIBUTE("No Such Attribute!");
 
     public final String message;
 

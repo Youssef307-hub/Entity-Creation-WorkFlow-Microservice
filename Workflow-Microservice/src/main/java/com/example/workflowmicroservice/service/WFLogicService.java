@@ -88,7 +88,7 @@ public class WFLogicService {
         return logRepository.findPendingEntitiesIds(eligibleStepNumber, entityTypeFromDB.getId());
     }
 
-    public List<Long> getApprovedEntitiesIds(String entityType){
+    public List<Long> getApprovedEntitiesIds(String entityType)     {
         EntityType entityTypeFromDB = entityTypeRepository.findEntityTypeByTypeName(entityType)
                 .orElseThrow(()-> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
 
