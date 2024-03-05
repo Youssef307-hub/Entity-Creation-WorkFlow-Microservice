@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.*;
+
+import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.ENTITY_TYPE_NOT_FOUND;
+import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.NULL_POINTER;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class EntityTypeService {
     private final WorkFlowMapper mapper;
 
     @Transactional
-    public ResponseEntity<EntityTypeDTO> createEntityType(EntityTypeDTO entityTypeDTO){
+    public ResponseEntity<EntityTypeDTO> createEntityType(EntityTypeDTO entityTypeDTO) {
         try {
             typeRepository.save(mapper.mapToEntity(entityTypeDTO));
         } catch (NullPointerException e) {
@@ -32,10 +34,10 @@ public class EntityTypeService {
         return new ResponseEntity<>(entityTypeDTO, HttpStatus.CREATED);
     }
 
-    public ResponseEntity<List<EntityTypeDTO>> getAllEntityTypes(){
+    public ResponseEntity<List<EntityTypeDTO>> getAllEntityTypes() {
         List<EntityType> entityTypes = typeRepository.findAll();
 
-        if (entityTypes.isEmpty()){
+        if (entityTypes.isEmpty()) {
             throw new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message);
         }
 
@@ -44,15 +46,15 @@ public class EntityTypeService {
         return new ResponseEntity<>(entityTypesDTO, HttpStatus.CREATED);
     }
 
-    public ResponseEntity<EntityTypeDTO> getEntityTypeById(Long id){
-        EntityType entityType = typeRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
+    public ResponseEntity<EntityTypeDTO> getEntityTypeById(Long id) {
+        EntityType entityType = typeRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
 
         return new ResponseEntity<>(mapper.mapToDTO(entityType), HttpStatus.OK);
     }
 
     @Transactional
-    public ResponseEntity<EntityTypeDTO> updateEntityTypeById(Long id, EntityTypeDTO entityTypeDTO){
-        EntityType entityType = typeRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
+    public ResponseEntity<EntityTypeDTO> updateEntityTypeById(Long id, EntityTypeDTO entityTypeDTO) {
+        EntityType entityType = typeRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
         try {
             entityType.setTypeName(entityTypeDTO.getTypeName());
         } catch (NullPointerException e) {
@@ -64,8 +66,8 @@ public class EntityTypeService {
     }
 
     @Transactional
-    public ResponseEntity<String> deleteEntityTypeById(Long id){
-        EntityType entityType = typeRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
+    public ResponseEntity<String> deleteEntityTypeById(Long id) {
+        EntityType entityType = typeRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
         typeRepository.delete(entityType);
 
         return new ResponseEntity<>(

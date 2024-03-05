@@ -13,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,9 +30,9 @@ public class WFController {
             tags = "POST")
     @PostMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WorkFlowDTO> createWorkflow(@Valid @RequestBody WorkFlowDTO workFlowDTO){
+    public ResponseEntity<WorkFlowDTO> createWorkflow(@Valid @RequestBody WorkFlowDTO workFlowDTO) {
         return workFlowService.createWorkFlowWithSteps(workFlowDTO);
-    };
+    }
 
     @Operation(
             summary = "Get All Work Flows ",
@@ -42,9 +41,9 @@ public class WFController {
             tags = "GET")
     @GetMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<WorkFlowDTO>> getAllWorkFlows(){
+    public ResponseEntity<List<WorkFlowDTO>> getAllWorkFlows() {
         return workFlowService.getAllWorkFlows();
-    };
+    }
 
     @Operation(
             summary = "Get Work Flow By Id",
@@ -53,9 +52,9 @@ public class WFController {
             tags = "GET")
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WorkFlowDTO> getWorkFlowById(@PathVariable Long id){
+    public ResponseEntity<WorkFlowDTO> getWorkFlowById(@PathVariable Long id) {
         return workFlowService.getWorkFlowById(id);
-    };
+    }
 
     @Operation(
             summary = "Update Work Flow Attributes By Work Flow Id",
@@ -68,7 +67,7 @@ public class WFController {
     public ResponseEntity<WorkFlowDTO> updateWorkFlowAttributesByWorkFlowId(
             @PathVariable Long id,
             @PathVariable String attributeName,
-            @RequestBody Object requestBody){
+            @RequestBody Object requestBody) {
         return workFlowService.updateWorkFlowAttributesByWorkFlowId(id, attributeName, requestBody);
     }
 
@@ -81,7 +80,7 @@ public class WFController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<WorkFlowDTO> updateWorkFlowStepsByWorkFlowId(
             @PathVariable Long id,
-            @RequestBody List<WFStepDTO> requestBody){
+            @RequestBody List<WFStepDTO> requestBody) {
         return workFlowService.updateWorkFlowStepsByWorkFlowId(id, requestBody);
     }
 
@@ -92,10 +91,9 @@ public class WFController {
             tags = "DELETE")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleterEntityTypeById(@PathVariable Long id){
+    public ResponseEntity<String> deleterEntityTypeById(@PathVariable Long id) {
         return workFlowService.deleteWorkFlowById(id);
-    };
-
+    }
 
 
 }

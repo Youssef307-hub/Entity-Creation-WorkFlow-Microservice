@@ -24,9 +24,9 @@ public class WFLogicController {
                     " the Api can be accessed by any user that has role 'user' or above",
             tags = "POST")
     @PostMapping("/initiate/{entityType}/{entityId}")
-    public String initiateWorkFlow(@PathVariable String entityType, @PathVariable Long entityId){
+    public String initiateWorkFlow(@PathVariable String entityType, @PathVariable Long entityId) {
 
-        return logicService.initiateWorkFlow(entityType,entityId);
+        return logicService.initiateWorkFlow(entityType, entityId);
     }
 
     @Operation(
@@ -35,7 +35,7 @@ public class WFLogicController {
                     " the Api can be accessed by any user that has role 'user' or above",
             tags = "GET")
     @GetMapping("/pending/{entityType}")
-    public List<Long> getPendingEntitiesIds(@PathVariable String entityType){
+    public List<Long> getPendingEntitiesIds(@PathVariable String entityType) {
 
         return logicService.getPendingEntitiesIds(entityType);
     }
@@ -46,7 +46,7 @@ public class WFLogicController {
                     " the Api can be accessed by any user that has role 'user' or above",
             tags = "GET")
     @GetMapping("/approved/{entityType}")
-    public List<Long> getApprovedEntitiesIds(@PathVariable String entityType){
+    public List<Long> getApprovedEntitiesIds(@PathVariable String entityType) {
 
         return logicService.getApprovedEntitiesIds(entityType);
     }
@@ -57,7 +57,7 @@ public class WFLogicController {
                     " the Api can be accessed by any user that has role 'user' or above",
             tags = "PUT")
     @PutMapping("/update/{entityType}/{entityId}")
-    public String updateEntityStatusById(@PathVariable String entityType, @PathVariable Long entityId){
+    public String updateEntityStatusById(@PathVariable String entityType, @PathVariable Long entityId) {
 
         return logicService.updateEntityStatusById(entityType, entityId);
     }

@@ -25,10 +25,11 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
     }
 
     private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-        if(jwt.getClaim("realm_access") != null) {
+        if (jwt.getClaim("realm_access") != null) {
             Map<String, Object> realmAccess = jwt.getClaim("realm_access");
             ObjectMapper mapper = new ObjectMapper();
-            List<String> rolesFromRealm = mapper.convertValue(realmAccess.get("roles"), new TypeReference<>(){});
+            List<String> rolesFromRealm = mapper.convertValue(realmAccess.get("roles"), new TypeReference<>() {
+            });
             List<GrantedAuthority> authorities = new ArrayList<>();
 
             for (String role : rolesFromRealm) {

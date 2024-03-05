@@ -17,7 +17,7 @@ public enum ErrorsEnum {
 
     public final String message;
 
-    ErrorsEnum(String message){
+    ErrorsEnum(String message) {
         this.message = message;
     }
 }

@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorObject> handelValidationException(MethodArgumentNotValidException exception){
+    public ResponseEntity<ErrorObject> handelValidationException(MethodArgumentNotValidException exception) {
 
         List<String> errorResponse = new ArrayList<>();
 
@@ -81,7 +81,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ObjectNotFoundException.class)
-    public ResponseEntity<ErrorObject> handelNotFoundException(ObjectNotFoundException exception){
+    public ResponseEntity<ErrorObject> handelNotFoundException(ObjectNotFoundException exception) {
 
         ErrorObject errorObject = ErrorObject.builder()
                 .statusCode(HttpStatus.NOT_FOUND.value())

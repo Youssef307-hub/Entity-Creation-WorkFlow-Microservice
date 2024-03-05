@@ -29,9 +29,9 @@ public class EntityTypeController {
             tags = "POST")
     @PostMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EntityTypeDTO> createEntityType(@Valid @RequestBody EntityTypeDTO entityTypeDTO){
-      return typeService.createEntityType(entityTypeDTO);
-    };
+    public ResponseEntity<EntityTypeDTO> createEntityType(@Valid @RequestBody EntityTypeDTO entityTypeDTO) {
+        return typeService.createEntityType(entityTypeDTO);
+    }
 
     @Operation(
             summary = "Get All Entity Types",
@@ -40,9 +40,9 @@ public class EntityTypeController {
             tags = "GET")
     @GetMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<EntityTypeDTO>> getAllEntityTypes(){
+    public ResponseEntity<List<EntityTypeDTO>> getAllEntityTypes() {
         return typeService.getAllEntityTypes();
-    };
+    }
 
     @Operation(
             summary = "Get Entity Type By Id",
@@ -51,9 +51,9 @@ public class EntityTypeController {
             tags = "GET")
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EntityTypeDTO> getEntityTypeById(@PathVariable Long id){
+    public ResponseEntity<EntityTypeDTO> getEntityTypeById(@PathVariable Long id) {
         return typeService.getEntityTypeById(id);
-    };
+    }
 
     @Operation(
             summary = "Update Entity Type Name By Id",
@@ -62,9 +62,9 @@ public class EntityTypeController {
             tags = "PUT")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EntityTypeDTO> updateEntityTypeById(@PathVariable Long id, @RequestBody EntityTypeDTO entityTypeDTO){
+    public ResponseEntity<EntityTypeDTO> updateEntityTypeById(@PathVariable Long id, @RequestBody EntityTypeDTO entityTypeDTO) {
         return typeService.updateEntityTypeById(id, entityTypeDTO);
-    };
+    }
 
     @Operation(
             summary = "Delete Entity Type By Id",
@@ -73,7 +73,8 @@ public class EntityTypeController {
             tags = "DELETE")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleterEntityTypeById(@PathVariable Long id){
+    public ResponseEntity<String> deleterEntityTypeById(@PathVariable Long id) {
         return typeService.deleteEntityTypeById(id);
-    };
+    }
+
 }

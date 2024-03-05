@@ -18,7 +18,7 @@ public class WorkFlowDTO {
     private Long id;
 
     @NotNull(message = "Please enter the entity type id!")
-    @Min(value = 1 , message = "Please enter a valid entity type id!")
+    @Min(value = 1, message = "Please enter a valid entity type id!")
     private Long entityTypeId;
 
     private String description;

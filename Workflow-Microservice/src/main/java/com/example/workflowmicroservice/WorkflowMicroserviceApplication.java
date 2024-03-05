@@ -9,17 +9,17 @@ import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
 @SecurityScheme(
-		name = "Keycloak",
-		openIdConnectUrl = "http://localhost:8090/realms/Entity-Creation-Work-Flow/.well-known/openid-configuration",
-		scheme = "bearer",
-		type = SecuritySchemeType.OPENIDCONNECT,
-		in = SecuritySchemeIn.HEADER
+        name = "Keycloak",
+        openIdConnectUrl = "http://localhost:8090/realms/Entity-Creation-Work-Flow/.well-known/openid-configuration",
+        scheme = "bearer",
+        type = SecuritySchemeType.OPENIDCONNECT,
+        in = SecuritySchemeIn.HEADER
 )
 @EnableCaching
 public class WorkflowMicroserviceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(WorkflowMicroserviceApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(WorkflowMicroserviceApplication.class, args);
+    }
 
 }

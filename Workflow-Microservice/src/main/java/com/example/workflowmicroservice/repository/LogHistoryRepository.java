@@ -5,5 +5,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface LogHistoryRepository extends MongoRepository<WFLogHistory,Long> {
+public interface LogHistoryRepository extends MongoRepository<WFLogHistory, Long> {
 }

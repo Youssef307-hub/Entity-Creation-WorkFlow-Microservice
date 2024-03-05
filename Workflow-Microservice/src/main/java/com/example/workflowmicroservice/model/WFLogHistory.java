@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class WFLogHistory {
 
     @Id
-    private Long id;
+    private String historyId;
 
     private String createdBy;
 
