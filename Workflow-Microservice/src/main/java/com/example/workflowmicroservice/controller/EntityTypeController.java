@@ -35,7 +35,7 @@ public class EntityTypeController {
 
     @Operation(
             summary = "Get All Entity Types",
-            description = "Get All entity types," +
+            description = "Get all entity types," +
                     " the Api can be accessed by any user that has role 'admin'",
             tags = "GET")
     @GetMapping("")
@@ -56,14 +56,14 @@ public class EntityTypeController {
     }
 
     @Operation(
-            summary = "Update Entity Type Name By Id",
-            description = "Update entity type name by the entity id," +
+            summary = "Update Entity Type",
+            description = "Update entity type by passing the entity type dto to request body," +
                     " the Api can be accessed by any user that has role 'admin'",
             tags = "PUT")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EntityTypeDTO> updateEntityTypeById(@PathVariable Long id, @RequestBody EntityTypeDTO entityTypeDTO) {
-        return typeService.updateEntityTypeById(id, entityTypeDTO);
+    public ResponseEntity<EntityTypeDTO> updateEntityTypeById(@RequestBody EntityTypeDTO entityTypeDTO) {
+        return typeService.updateEntityType(entityTypeDTO);
     }
 
     @Operation(
@@ -73,7 +73,7 @@ public class EntityTypeController {
             tags = "DELETE")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleterEntityTypeById(@PathVariable Long id) {
+    public ResponseEntity<String> deleteEntityTypeById(@PathVariable Long id) {
         return typeService.deleteEntityTypeById(id);
     }
 

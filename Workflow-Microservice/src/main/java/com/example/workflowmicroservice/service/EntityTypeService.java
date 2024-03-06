@@ -53,13 +53,12 @@ public class EntityTypeService {
     }
 
     @Transactional
-    public ResponseEntity<EntityTypeDTO> updateEntityTypeById(Long id, EntityTypeDTO entityTypeDTO) {
-        EntityType entityType = typeRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
-        try {
-            entityType.setTypeName(entityTypeDTO.getTypeName());
-        } catch (NullPointerException e) {
-            throw new NullPointerException(NULL_POINTER.message);
-        }
+    public ResponseEntity<EntityTypeDTO> updateEntityType(EntityTypeDTO entityTypeDTO) {
+        EntityType entityType = typeRepository.findById(entityTypeDTO.getId())
+                .orElseThrow(() -> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
+
+        entityType.setTypeName(entityTypeDTO.getTypeName());
+        entityType.setId(entityTypeDTO.getId());
         typeRepository.save(entityType);
 
         return new ResponseEntity<>(mapper.mapToDTO(entityType), HttpStatus.CREATED);

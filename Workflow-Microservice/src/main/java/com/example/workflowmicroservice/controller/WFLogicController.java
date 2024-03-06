@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/work-flow")
 @SecurityRequirement(name = "Keycloak")
-@Tag(name = "Work FLow Microservice Logic", description = "Work Flow Logic Management APIs")
+@Tag(name = "Work Flow Microservice Logic", description = "Work Flow Logic Management APIs")
 public class WFLogicController {
 
     private final WFLogicService logicService;

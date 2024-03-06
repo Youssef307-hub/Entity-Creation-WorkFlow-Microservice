@@ -1,6 +1,5 @@
 package com.example.workflowmicroservice.controller;
 
-import com.example.workflowmicroservice.dto.WFStepDTO;
 import com.example.workflowmicroservice.dto.WorkFlowDTO;
 import com.example.workflowmicroservice.service.WorkFlowService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +24,7 @@ public class WFController {
 
     @Operation(
             summary = "Create New Work Flow Along With Its Steps",
-            description = "Create new work flow," +
+            description = "Create a new work flow," +
                     " the Api can be accessed by any user that has role 'admin'",
             tags = "POST")
     @PostMapping("")
@@ -36,7 +35,7 @@ public class WFController {
 
     @Operation(
             summary = "Get All Work Flows ",
-            description = "Get All work flows," +
+            description = "Get all work flows," +
                     " the Api can be accessed by any user that has role 'admin'",
             tags = "GET")
     @GetMapping("")
@@ -57,31 +56,15 @@ public class WFController {
     }
 
     @Operation(
-            summary = "Update Work Flow Attributes By Work Flow Id",
-            description = "Update work flow attributes (version or description or entityType) based on the attribute name coming from " +
-                    "the path variable by the work flow id," +
-                    " the Api can be accessed by any user that has role 'admin'",
-            tags = "PATCH")
-    @PatchMapping("/{id}/{attributeName}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WorkFlowDTO> updateWorkFlowAttributesByWorkFlowId(
-            @PathVariable Long id,
-            @PathVariable String attributeName,
-            @RequestBody Object requestBody) {
-        return workFlowService.updateWorkFlowAttributesByWorkFlowId(id, attributeName, requestBody);
-    }
-
-    @Operation(
-            summary = "Update Work Flow Steps By Work Flow Id",
-            description = "Update work flow steps by work flow id," +
+            summary = "Update Work Flow Along With Its Steps",
+            description = "Update work flow attributes by passing the work flow dto in the request body," +
                     " the Api can be accessed by any user that has role 'admin'",
             tags = "PUT")
-    @PutMapping("/{id}/steps")
+    @PutMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WorkFlowDTO> updateWorkFlowStepsByWorkFlowId(
-            @PathVariable Long id,
-            @RequestBody List<WFStepDTO> requestBody) {
-        return workFlowService.updateWorkFlowStepsByWorkFlowId(id, requestBody);
+    public ResponseEntity<WorkFlowDTO> updateWorkFlow(
+            @RequestBody WorkFlowDTO workFlowDTO) {
+        return workFlowService.updateWorkFlow(workFlowDTO);
     }
 
     @Operation(
@@ -91,7 +74,7 @@ public class WFController {
             tags = "DELETE")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleterEntityTypeById(@PathVariable Long id) {
+    public ResponseEntity<String> deleteWorkFlowById(@PathVariable Long id) {
         return workFlowService.deleteWorkFlowById(id);
     }
 

@@ -40,6 +40,7 @@ public class WorkFlow {
             name = "entity_type_id",
             referencedColumnName = "id",
             nullable = false,
+            updatable = false,
             foreignKey = @ForeignKey(
                     name = "entity_type_id_fk"
             )

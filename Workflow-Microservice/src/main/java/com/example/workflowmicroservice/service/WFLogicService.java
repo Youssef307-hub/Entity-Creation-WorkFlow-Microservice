@@ -57,29 +57,14 @@ public class WFLogicService {
         // Getting the number of the step that the user is eligible for
         int eligibleStepNumber = wfStep.getStepNumber();
 
-        // Save in the work flow log that creation transaction
-        WFLog wfLog = WFLog.builder()
-                .step(wfStep)
-                .createdBy(extractUserName())
-                .creationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-                .entityTypeId(entityTypeFromDB.getId())
-                .entityId(entity_id)
-                .workFlow(workFlow)
-                .build();
+        WFLog wfLog = createWfLog(entity_id, wfStep, entityTypeFromDB, workFlow);
 
-        // if the step number is less than or equal the total number of steps then return the status
-        // and that will be the current step of the user
-        if (eligibleStepNumber < numberOfSteps) {
-            saveLogToLogHistoryDB(wfLog);
-            logRepository.save(wfLog);
-            return PENDING.value;
-        } else if (eligibleStepNumber == numberOfSteps) {
-            saveLogToLogHistoryDB(wfLog);
-            logRepository.save(wfLog);
-            return Approved.value;
-        }
+        String status = getStatusForEligibleStep(eligibleStepNumber, numberOfSteps);
 
-        return null;
+        saveLogToLogHistoryDB(wfLog);
+        logRepository.save(wfLog);
+
+        return status;
     }
 
     public List<Long> getPendingEntitiesIds(String entityType) {
@@ -136,32 +121,44 @@ public class WFLogicService {
         // Save the New log to log history table
         // Then Overwrite the old log with the new one to work flow log table
         if (currentStepNumber < eligibleStepNumber) {
-            WFLog newWFLog = WFLog.builder()
-                    .step(wfStep)
-                    .creationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-                    .createdBy(extractUserName())
-                    .entityTypeId(entityTypeFromDB.getId())
-                    .entityId(entity_id)
-                    .workFlow(workFlow)
-                    .build();
+            WFLog newWFLog = createWfLog(entity_id, wfStep, entityTypeFromDB, workFlow);
 
             saveLogToLogHistoryDB(newWFLog);
-
-            WFLog oldLog = logRepository.findWFLogByEntityIdAndEntityTypeId(entity_id, entityTypeFromDB.getId());
+            WFLog oldLog = logRepository
+                    .findWFLogByEntityIdAndEntityTypeId(entity_id, entityTypeFromDB.getId());
             newWFLog.setId(oldLog.getId());
             logRepository.save(newWFLog);
 
-            if (eligibleStepNumber < numberOfSteps)
-                return PENDING.value;
-            else if (eligibleStepNumber == numberOfSteps) {
-                return Approved.value;
-            }
+            return getStatusForEligibleStep(eligibleStepNumber, numberOfSteps);
         }
         return null;
     }
 
-    private void saveLogToLogHistoryDB(WFLog wfLog) {
+    private String getStatusForEligibleStep(int eligibleStepNumber, Long numberOfSteps) {
+        // If the step number is less than or equal the total number of steps then return the status
+        // and that will be the current step of the user
+        String status = null;
+        if (eligibleStepNumber < numberOfSteps)
+            status = PENDING.value;
+        else if (eligibleStepNumber == numberOfSteps) {
+            status = Approved.value;
+        }
+        return status;
+    }
 
+    private WFLog createWfLog(Long entity_id, WFStep wfStep, EntityType entityTypeFromDB, WorkFlow workFlow) {
+        // Create the work flow log that creation transaction
+        return WFLog.builder()
+                .step(wfStep)
+                .createdBy(extractUserName())
+                .creationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .entityTypeId(entityTypeFromDB.getId())
+                .entityId(entity_id)
+                .workFlow(workFlow)
+                .build();
+    }
+
+    private void saveLogToLogHistoryDB(WFLog wfLog) {
         // Convert the log type to log history type, so it can be persisted in mongoDB
         WFLogHistory wfLogHistory = mapper.mapToHistoryFromLog(wfLog);
         wfLogHistory.setWorkFlowId(wfLog.getWorkFlow().getId());

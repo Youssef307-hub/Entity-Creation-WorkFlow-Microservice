@@ -8,7 +8,6 @@ import com.example.workflowmicroservice.model.WFStep;
 import com.example.workflowmicroservice.model.WorkFlow;
 import com.example.workflowmicroservice.repository.EntityTypeRepository;
 import com.example.workflowmicroservice.repository.WFRepository;
-import com.example.workflowmicroservice.repository.WFStepRepository;
 import com.example.workflowmicroservice.utility.WorkFlowMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -20,9 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.*;
+import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.ENTITY_TYPE_NOT_FOUND;
+import static com.example.workflowmicroservice.exceptionhandling.ErrorsEnum.WORK_FLOW_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +31,6 @@ public class WorkFlowService {
     private final WFRepository WFRepository;
     private final EntityTypeRepository entityTypeRepository;
     private final WorkFlowMapper mapper;
-    private final WFStepRepository wfStepRepository;
 
     @Transactional
     public ResponseEntity<WorkFlowDTO> createWorkFlowWithSteps(WorkFlowDTO workFlowDTO) {
@@ -92,104 +90,25 @@ public class WorkFlowService {
     }
 
     @Transactional
-    public ResponseEntity<WorkFlowDTO> updateWorkFlowAttributesByWorkFlowId(
-            Long id,
-            String attributeName,
-            Object requestBody) {
-
-        WorkFlow workFlow = WFRepository.findById(id)
+    public ResponseEntity<WorkFlowDTO> updateWorkFlow(WorkFlowDTO newWorkFlowDTO) {
+        WorkFlow oldWorkFlow = WFRepository.findById(newWorkFlowDTO.getId())
                 .orElseThrow(() -> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
 
-        switch (attributeName.toLowerCase()) {
-            case "version": {
-                if (requestBody instanceof String) {
-                    workFlow.setVersion((String) requestBody);
-                    WFRepository.save(workFlow);
-                } else
-                    throw new RuntimeException(BAD_REQUEST.message);
+        EntityType entityType = entityTypeRepository.findById(newWorkFlowDTO.getEntityTypeId())
+                .orElseThrow(() -> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
 
-                break;
-            }
-            case "description": {
-                if (requestBody instanceof String) {
-                    workFlow.setDescription((String) requestBody);
-                    WFRepository.save(workFlow);
-                } else
-                    throw new RuntimeException(BAD_REQUEST.message);
+        WorkFlow newWorkFlow = mapper.mapToEntity(newWorkFlowDTO);
 
-                break;
-            }
-            case "entitytypeid": {
-                if (requestBody instanceof Integer) {
-                    EntityType entityType = entityTypeRepository.findById(Long.valueOf((Integer) requestBody))
-                            .orElseThrow(() -> new ObjectNotFoundException(ENTITY_TYPE_NOT_FOUND.message));
-                    workFlow.setEntityType(entityType);
-                    WFRepository.save(workFlow);
-                } else
-                    throw new RuntimeException(BAD_REQUEST.message);
+        newWorkFlow.setId(oldWorkFlow.getId());
+        newWorkFlow.setEntityType(entityType);
+        newWorkFlow.getWfSteps().forEach(wfStep -> wfStep.setWorkFlow(newWorkFlow));
 
-                break;
-            }
-            default: {
-                throw new RuntimeException(NO_SUCH_ATTRIBUTE.message);
-            }
-        }
+        WFRepository.save(newWorkFlow);
 
-        // Map the updated work flow to work flow DTO to return it as a response
-        WorkFlowDTO workFlowDto = mapper.mapToDTO(workFlow);
-        workFlowDto.setEntityTypeId(workFlow.getEntityType().getId());
+        WorkFlowDTO result = mapper.mapToDTO(newWorkFlow);
+        result.setEntityTypeId(entityType.getId());
 
-        return new ResponseEntity<>(workFlowDto, HttpStatus.CREATED);
-    }
-
-
-    @Transactional
-    public ResponseEntity<WorkFlowDTO> updateWorkFlowStepsByWorkFlowId(Long id, List<WFStepDTO> newStepsDTO) {
-        WorkFlow workFlow = WFRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(WORK_FLOW_NOT_FOUND.message));
-
-        List<WFStep> oldWfSteps = workFlow.getWfSteps();
-        List<WFStep> newWfSteps = new ArrayList<>();
-
-        // Convert the Work Flow Steps DTO to Work Flow Steps
-        for (WFStepDTO wfStepDTO : newStepsDTO) {
-            WFStep wfStep = mapper.mapToEntity(wfStepDTO);
-            wfStep.setWorkFlow(workFlow);
-            newWfSteps.add(wfStep);
-        }
-
-        // Iterate over the old WFSteps
-        for (WFStep oldWfStep : oldWfSteps) {
-            // Find the Work Flow Steps with ids that's already existing to update its values with new Work Flow Step
-            Optional<WFStep> matchingNewWfStep = newWfSteps.stream()
-                    .filter(newWfStep -> newWfStep.getId().equals(oldWfStep.getId()))
-                    .findAny();
-
-            // If a matching new Work Flow Step is found, update the old WFStep
-            matchingNewWfStep.ifPresent(wfStepRepository::save);
-        }
-
-        // Add new WFSteps that don't already exist
-        for (WFStep newWfStep : newWfSteps) {
-            // Checking that there is no new Work Flow Step with matching ids
-            boolean isNewWfStep = oldWfSteps.stream()
-                    .noneMatch(oldWfStep -> oldWfStep.getId().equals(newWfStep.getId()));
-
-            if (isNewWfStep) {
-                // Add the new WFStep to the WorkFlow's list of WFSteps
-                workFlow.getWfSteps().add(newWfStep);
-            }
-        }
-
-        // After all that update the Work Flow with the updated steps
-        WFRepository.save(workFlow);
-
-
-        // Map the updated work flow to work flow DTO to return it as a response
-        WorkFlowDTO workFlowDto = mapper.mapToDTO(workFlow);
-        workFlowDto.setEntityTypeId(workFlow.getEntityType().getId());
-
-        return new ResponseEntity<>(workFlowDto, HttpStatus.CREATED);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @Transactional
