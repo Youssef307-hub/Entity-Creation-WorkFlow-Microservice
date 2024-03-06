@@ -1,8 +1,5 @@
 package com.example.customermicroservice.exceptionhandling;
 
-import org.springframework.http.HttpStatus;
-
-
 public enum ErrorsEnum {
 
     CUSTOMER_NOT_FOUND("Customer Not Found!"),
@@ -21,7 +18,7 @@ public enum ErrorsEnum {
 
     public final String message;
 
-    ErrorsEnum(String message){
+    ErrorsEnum(String message) {
         this.message = message;
     }
 

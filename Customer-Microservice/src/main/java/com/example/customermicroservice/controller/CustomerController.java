@@ -8,8 +8,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +29,7 @@ public class CustomerController {
                     " the Api can be accessed by any user that has role 'user' or above",
             tags = "POST")
     @PostMapping("")
-    public ResponseEntity<CustomerResponseDTO> createCustomer(@Valid @RequestBody CustomerRequestDTO customerRequestDTO){
+    public ResponseEntity<CustomerResponseDTO> createCustomer(@Valid @RequestBody CustomerRequestDTO customerRequestDTO) {
 
         return customerService.createCustomer(customerRequestDTO);
     }
@@ -43,7 +41,7 @@ public class CustomerController {
             tags = "PUT")
     @PutMapping("/update/{entityId}")
     @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
-    public ResponseEntity<CustomerResponseDTO> updateCustomerStatus(@PathVariable Long entityId){
+    public ResponseEntity<CustomerResponseDTO> updateCustomerStatus(@PathVariable Long entityId) {
 
         return customerService.updateCustomerStatus(entityId);
     }
@@ -55,7 +53,7 @@ public class CustomerController {
             tags = "GET")
     @GetMapping("/pending")
     @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
-    public ResponseEntity<List<CustomerResponseDTO>> getPendingCustomers(){
+    public ResponseEntity<List<CustomerResponseDTO>> getPendingCustomers() {
 
         return customerService.getPendingCustomers();
     }
@@ -66,7 +64,7 @@ public class CustomerController {
                     " the Api can be accessed by any user that has role 'user' or above",
             tags = "GET")
     @GetMapping("")
-    public ResponseEntity<List<CustomerResponseDTO>> getApprovedCustomers(){
+    public ResponseEntity<List<CustomerResponseDTO>> getApprovedCustomers() {
 
         return customerService.getApprovedCustomers();
     }

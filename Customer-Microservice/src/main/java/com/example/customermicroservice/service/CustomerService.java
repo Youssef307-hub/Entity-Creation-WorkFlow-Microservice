@@ -2,11 +2,11 @@ package com.example.customermicroservice.service;
 
 import com.example.customermicroservice.dto.CustomerRequestDTO;
 import com.example.customermicroservice.dto.CustomerResponseDTO;
-import com.example.customermicroservice.exceptionhandling.*;
+import com.example.customermicroservice.exceptionhandling.CustomerNotFoundException;
+import com.example.customermicroservice.exceptionhandling.ErrorsEnum;
 import com.example.customermicroservice.model.Customer;
 import com.example.customermicroservice.repository.CustomerRepository;
 import com.example.customermicroservice.utility.CustomerMapper;
-import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -17,12 +17,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
 import static com.example.customermicroservice.exceptionhandling.ErrorsEnum.*;
 
 @Service
@@ -32,14 +34,14 @@ public class CustomerService {
     private final CustomerMapper customerMapper;
     private final RestTemplate restTemplate;
 
-    public CustomerService(RestTemplateBuilder restTemplateBuilder, CustomerMapper customerMapper, CustomerRepository customerRepository){
+    public CustomerService(RestTemplateBuilder restTemplateBuilder, CustomerMapper customerMapper, CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
         this.customerMapper = customerMapper;
         this.restTemplate = restTemplateBuilder.build();
     }
 
     @Transactional
-    public ResponseEntity<CustomerResponseDTO> createCustomer(CustomerRequestDTO customerRequestDTO){
+    public ResponseEntity<CustomerResponseDTO> createCustomer(CustomerRequestDTO customerRequestDTO) {
         // Map the incoming DTO to customer
         Customer customer = null;
         try {
@@ -75,7 +77,7 @@ public class CustomerService {
         }
 
         // If Status returned with null value delete the initial data created for the customer
-        if (status == null){
+        if (status == null) {
             customerRepository.deleteById(customer.getId());
             throw new NullPointerException(STATUS_IS_NULL.message);
         }
@@ -84,11 +86,11 @@ public class CustomerService {
         customer.setStatus(status);
         customerRepository.save(customer);
 
-         return new ResponseEntity<>(customerMapper.mapToResponseDTO(customer), HttpStatus.CREATED);
+        return new ResponseEntity<>(customerMapper.mapToResponseDTO(customer), HttpStatus.CREATED);
     }
 
 
-    public ResponseEntity<List<CustomerResponseDTO>> getPendingCustomers(){
+    public ResponseEntity<List<CustomerResponseDTO>> getPendingCustomers() {
 
         // Url to hit in the WorkFlow Microservice
         String url = "http://localhost:8080/work-flow/pending/Customer";
@@ -104,14 +106,15 @@ public class CustomerService {
                     url,
                     HttpMethod.GET,
                     requestEntity,
-                    new ParameterizedTypeReference<>(){});
+                    new ParameterizedTypeReference<>() {
+                    });
             entityIds = response.getBody();
         } catch (RestClientException e) {
             throw new RuntimeException(e);
         }
 
         // If there is no ids returned then throw exception
-        if(entityIds == null || entityIds.isEmpty()){
+        if (entityIds == null || entityIds.isEmpty()) {
             throw new CustomerNotFoundException(CUSTOMERS_NOT_FOUND.message);
         }
 
@@ -122,7 +125,7 @@ public class CustomerService {
     }
 
 
-    public ResponseEntity<List<CustomerResponseDTO>> getApprovedCustomers(){
+    public ResponseEntity<List<CustomerResponseDTO>> getApprovedCustomers() {
 
         // Url to hit in the WorkFlow Microservice
         String url = "http://localhost:8080/work-flow/approved/Customer";
@@ -137,7 +140,8 @@ public class CustomerService {
                     url,
                     HttpMethod.GET,
                     requestEntity,
-                    new ParameterizedTypeReference<>(){});
+                    new ParameterizedTypeReference<>() {
+                    });
 
             entityIds = response.getBody();
         } catch (RestClientException e) {
@@ -145,7 +149,7 @@ public class CustomerService {
         }
 
         // If there is no ids returned then throw exception
-        if(entityIds == null || entityIds.isEmpty()){
+        if (entityIds == null || entityIds.isEmpty()) {
             throw new CustomerNotFoundException(CUSTOMERS_NOT_FOUND.message);
         }
 
@@ -156,9 +160,9 @@ public class CustomerService {
     }
 
     @Transactional
-    public ResponseEntity<CustomerResponseDTO> updateCustomerStatus(Long entityId){
+    public ResponseEntity<CustomerResponseDTO> updateCustomerStatus(Long entityId) {
         Customer customer = customerRepository.findById(entityId)
-                .orElseThrow(()-> new CustomerNotFoundException(CUSTOMER_NOT_FOUND.message));
+                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_NOT_FOUND.message));
         LOGGER.info("The Customer is {} ", customer);
 
         // Url to hit in the WorkFlow Microservice
@@ -177,7 +181,7 @@ public class CustomerService {
         }
 
         // If Status returned with null value Customer Will Not Be Updated
-        if (status == null){
+        if (status == null) {
             throw new NullPointerException(CUSTOMER_NOT_UPDATED.message);
         }
 
@@ -197,7 +201,7 @@ public class CustomerService {
         Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
         String token = "Bearer " + jwt.getTokenValue();
 
-        if(jwt.getTokenValue() == null){
+        if (jwt.getTokenValue() == null) {
             throw new NullPointerException(ErrorsEnum.TOKEN_IS_NULL.message);
         }
 
@@ -210,7 +214,7 @@ public class CustomerService {
         return new HttpEntity<>(headers);
     }
 
-    private String extractUserName(){
+    private String extractUserName() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
         return jwt.getClaim("preferred_username");

@@ -8,16 +8,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @SecurityScheme(
-		name = "Keycloak",
-		openIdConnectUrl = "http://localhost:8090/realms/Entity-Creation-Work-Flow/.well-known/openid-configuration",
-		scheme = "bearer",
-		type = SecuritySchemeType.OPENIDCONNECT,
-		in = SecuritySchemeIn.HEADER
+        name = "Keycloak",
+        openIdConnectUrl = "http://localhost:8090/realms/Entity-Creation-Work-Flow/.well-known/openid-configuration",
+        scheme = "bearer",
+        type = SecuritySchemeType.OPENIDCONNECT,
+        in = SecuritySchemeIn.HEADER
 )
 public class CustomerMicroserviceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(CustomerMicroserviceApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(CustomerMicroserviceApplication.class, args);
+    }
 
 }

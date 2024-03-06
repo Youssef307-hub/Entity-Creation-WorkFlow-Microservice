@@ -12,6 +12,7 @@ import java.lang.annotation.*;
 public @interface FirstOrLastNameNotNull {
 
     String firstName();
+
     String lastName();
 
     String message() default "Please enter your first or last name, both can't be empty!";
@@ -20,7 +21,7 @@ public @interface FirstOrLastNameNotNull {
 
     Class<? extends Payload>[] payload() default {};
 
-    @Target({ ElementType.TYPE })
+    @Target({ElementType.TYPE})
     @Retention(RetentionPolicy.RUNTIME)
     @interface List {
         FirstOrLastNameNotNull[] value();

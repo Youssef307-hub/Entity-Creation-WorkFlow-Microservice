@@ -6,13 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import static com.example.customermicroservice.exceptionhandling.ErrorsEnum.*;
+
+import static com.example.customermicroservice.exceptionhandling.ErrorsEnum.DATABASE_ERROR;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorObject> handelValidationException(MethodArgumentNotValidException exception){
+    public ResponseEntity<ErrorObject> handelValidationException(MethodArgumentNotValidException exception) {
 
         List<String> errorResponse = new ArrayList<>();
 
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<ErrorObject> handelNullPointerException(NullPointerException exception){
+    public ResponseEntity<ErrorObject> handelNullPointerException(NullPointerException exception) {
 
         ErrorObject errorObject = ErrorObject.builder()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CustomerNotFoundException.class)
-    public ResponseEntity<ErrorObject> handelCustomerNotFoundException(CustomerNotFoundException exception){
+    public ResponseEntity<ErrorObject> handelCustomerNotFoundException(CustomerNotFoundException exception) {
         ErrorObject errorObject = ErrorObject.builder()
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .TimeStamp(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
